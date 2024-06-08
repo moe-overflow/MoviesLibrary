@@ -1,15 +1,15 @@
-package com.hsb.movieapi;
+package de.hsb.movieslib;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MovieApiApplication
+public class MoviesLibraryApplication
 {
 
     public static void main(String[] args)
     {
-        SpringApplication.run(MovieApiApplication.class, args);
+        SpringApplication.run(MoviesLibraryApplication.class, args);
     }
 
 }

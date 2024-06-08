@@ -8,13 +8,13 @@
         <version>3.2.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.hsb</groupId>
-    <artifactId>MovieAPI</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>MovieAPI</name>
-    <description>MovieAPI</description>
+    <groupId>de.hsb</groupId>
+    <artifactId>MoviesLibrary</artifactId>
+    <version>0.1</version>
+    <name>MoviesLibrary</name>
+    <description>MoviesLibrary</description>
     <properties>
-        <java.version>22</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
