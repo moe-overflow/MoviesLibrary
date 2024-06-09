@@ -1,56 +1,48 @@
 package de.hsb.movieslib.Controller;
 
 import de.hsb.movieslib.Model.Movie;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/movies")
 public class MovieController
 {
-    private final Collection<Movie> list = new ArrayList<>();
-    private static int counter = 0;
+    private final MongoTemplate mongoTemplate;
 
-    public MovieController()
+    @Autowired
+    public MovieController(MongoTemplate mongoTemplate)
     {
-
-        Movie movie1 = new Movie("300");
-        movie1.setId(++counter);
-        list.add(movie1);
-
-        Movie movie2 = new Movie("Prey");
-        movie2.setId(++counter);
-        list.add(movie2);
-
-        Movie movie3 = new Movie("Prey");
-        movie3.setId(++counter);
-        list.add(movie3);
-
+        this.mongoTemplate = mongoTemplate;
     }
 
     @GetMapping
     public ResponseEntity<Collection<Movie>> getMovies()
     {
-        return new ResponseEntity<>(list, HttpStatus.OK);
+        Collection<Movie> currentMovies = mongoTemplate.findAll(Movie.class);
+        return new ResponseEntity<>(currentMovies, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<Movie> insertMovie(@RequestBody Movie movie)
     {
-        movie.setId(++counter);
-        list.add(movie);
-        return new ResponseEntity<>(movie, HttpStatus.CREATED);
+        Movie movieToSave = mongoTemplate.save(movie);
+        return new ResponseEntity<>(movieToSave, HttpStatus.CREATED);
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Movie> findById(@PathVariable int id)
+    public ResponseEntity<Movie> findById(@PathVariable String id)
     {
-        for ( var movie : list)
-            if(movie.getId() == id)
+        Collection<Movie> currentMovies = mongoTemplate.findAll(Movie.class);
+        for ( var movie : currentMovies)
+            if(movie.getId().equals(id))
                 return new ResponseEntity<>(movie, HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -60,30 +52,37 @@ public class MovieController
     @GetMapping("/name/{name}")
     public ResponseEntity<Collection<Movie>> findByName(@PathVariable String name)
     {
-        Collection<Movie> foundMovies = new ArrayList<>();
-        for ( var movie : list )
-            if(movie.getName().equals(name))
-                foundMovies.add(movie);
+        // Query for finding movie by name (case-sensitive)
+        Query query = new Query();
+        query.addCriteria(Criteria.where("name").regex("^" + name + "$", "i"));
+        Collection<Movie> foundMovies = mongoTemplate.find(query, Movie.class);
 
-        if (foundMovies.isEmpty())
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
-        return new ResponseEntity<>(foundMovies, HttpStatus.OK);
+        return foundMovies.isEmpty() ?
+        new ResponseEntity<>(HttpStatus.NOT_FOUND) :
+        new ResponseEntity<>(foundMovies, HttpStatus.OK);
     }
 
+
     @DeleteMapping("/id/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable int id)
+    public ResponseEntity<Void> deleteById(@PathVariable String id)
     {
-        for (var movie : list)
+        Collection<Movie> currentMovies = mongoTemplate.findAll(Movie.class);
+        for (var movie : currentMovies)
         {
-            if(movie.getId() == id)
+            if(movie.getId().equals(id))
             {
-                list.remove(movie);
+                currentMovies.remove(movie);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @DeleteMapping("/clear")
+    public ResponseEntity<String> clearEntireDatabase()
+    {
+        mongoTemplate.getDb().drop();
+        return ResponseEntity.ok("Database cleared!");
+    }
 
 }

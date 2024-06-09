@@ -7,7 +7,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Build application
-RUN mvn clean package # -DskipTests
+RUN mvn clean package -DskipTests
 
 
 # openjdk for run
