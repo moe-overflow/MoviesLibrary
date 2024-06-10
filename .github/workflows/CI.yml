@@ -1,0 +1,39 @@
+name: movies_library
+
+on:
+  push:
+    branches:
+      main
+  pull_request:
+    branches:
+      main
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: adopt
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Build Docker image
+        run: docker build -t movieslibrary:latest .
+
+      - name: Docker up
+        run: docker-compose up -d
+
+      - name: Run tests
+        run: mvn test # docker-compose run movieslib mvn test
+
+      - name: Docker down
+        run: docker-compose down
+
