@@ -56,15 +56,12 @@ public class MovieController
         Query query = new Query();
         query.addCriteria(Criteria.where("name").regex("^" + name + "$", "i"));
         Collection<Movie> foundMovies = mongoTemplate.find(query, Movie.class);
-
-        return foundMovies.isEmpty() ?
-        new ResponseEntity<>(HttpStatus.NOT_FOUND) :
-        new ResponseEntity<>(foundMovies, HttpStatus.OK);
+        return new ResponseEntity<>(foundMovies, HttpStatus.OK);
     }
 
 
     @DeleteMapping("/id/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String id)
+    public ResponseEntity<Collection<Movie>> deleteById(@PathVariable String id)
     {
         Collection<Movie> currentMovies = mongoTemplate.findAll(Movie.class);
         for (var movie : currentMovies)
@@ -72,7 +69,7 @@ public class MovieController
             if(movie.getId().equals(id))
             {
                 currentMovies.remove(movie);
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>(currentMovies, HttpStatus.NO_CONTENT);
             }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
