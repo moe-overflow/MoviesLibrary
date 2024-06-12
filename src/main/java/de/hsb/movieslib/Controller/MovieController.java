@@ -61,18 +61,14 @@ public class MovieController
 
 
     @DeleteMapping("/id/{id}")
-    public ResponseEntity<Collection<Movie>> deleteById(@PathVariable String id)
+    public ResponseEntity<Void> deleteById(@PathVariable String id)
     {
-        Collection<Movie> currentMovies = mongoTemplate.findAll(Movie.class);
-        for (var movie : currentMovies)
-        {
-            if(movie.getId().equals(id))
-            {
-                currentMovies.remove(movie);
-                return new ResponseEntity<>(currentMovies, HttpStatus.NO_CONTENT);
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").is(id));
+        Movie movieToDelete = mongoTemplate.findAndRemove(query, Movie.class);
+        return movieToDelete != null ?
+        new ResponseEntity<>(HttpStatus.NO_CONTENT) :
+        new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/clear")
